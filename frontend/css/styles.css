@@ -1,0 +1,167 @@
+/* ==========================================================================
+   Nexus MCP Chat - Custom Styles & Animations
+   ========================================================================== */
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+/* Glassmorphism Surface */
+.glass-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* User Message Bubble */
+.user-bubble {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #7c3aed 100%);
+  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.25);
+}
+
+/* AI Message Bubble */
+.assistant-bubble {
+  background: rgba(30, 41, 59, 0.7);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(51, 65, 85, 0.8);
+}
+
+/* Tool Execution Card */
+.tool-card {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  border-left: 3px solid #818cf8;
+}
+
+/* Markdown Formatted Typography */
+.prose-custom {
+  color: #e2e8f0;
+  line-height: 1.65;
+  font-size: 0.9375rem;
+}
+
+.prose-custom p {
+  margin-bottom: 0.75rem;
+}
+
+.prose-custom p:last-child {
+  margin-bottom: 0;
+}
+
+.prose-custom strong {
+  color: #f8fafc;
+  font-weight: 600;
+}
+
+.prose-custom ul, .prose-custom ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
+  padding-left: 1.25rem;
+}
+
+.prose-custom ul {
+  list-style-type: disc;
+}
+
+.prose-custom ol {
+  list-style-type: decimal;
+}
+
+.prose-custom li {
+  margin-bottom: 0.25rem;
+}
+
+.prose-custom code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.825em;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.15em 0.4em;
+  border-radius: 0.375rem;
+  color: #a5b4fc;
+}
+
+.prose-custom pre {
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding: 0.875rem 1rem;
+  background: #090d16;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  border-radius: 0.75rem;
+  overflow-x: auto;
+}
+
+.prose-custom pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: #cbd5e1;
+  font-size: 0.825rem;
+  display: block;
+}
+
+.prose-custom blockquote {
+  border-left: 3px solid #6366f1;
+  padding-left: 0.875rem;
+  font-style: italic;
+  color: #94a3b8;
+  margin: 0.75rem 0;
+}
+
+.prose-custom table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+.prose-custom th {
+  background: rgba(30, 41, 59, 0.9);
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+  border: 1px solid rgba(51, 65, 85, 0.8);
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.prose-custom td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  color: #cbd5e1;
+}
+
+.prose-custom tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

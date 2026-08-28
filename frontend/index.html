@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100 antialiased">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nexus MCP Chat — Intelligent Tool-Augmented LLM Interface</title>
+  <meta name="description" content="A modular full-stack AI chat application with Model Context Protocol (MCP) tool calling and FastAPI backend.">
+  
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              200: '#c7d2fe',
+              300: '#a5b4fc',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81',
+              950: '#1e1b4b',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-6px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Markdown parser (marked.js) & Syntax Highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="h-full flex flex-col bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 font-sans selection:bg-indigo-500 selection:text-white">
+
+  <!-- Application Shell -->
+  <div class="flex flex-col h-screen max-w-6xl mx-auto w-full px-3 sm:px-6 relative">
+    
+    <!-- Fixed Header -->
+    <header class="h-16 flex-none flex items-center justify-between border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md px-4 rounded-b-2xl z-20 shadow-lg shadow-black/20">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-violet-600 to-cyan-400 p-0.5 shadow-md shadow-indigo-500/20">
+          <div class="h-full w-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-display font-bold text-lg tracking-tight text-white flex items-center gap-2">
+              Nexus <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-300 to-cyan-400">MCP Chat</span>
+            </h1>
+            <span class="text-[10px] font-mono font-semibold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-full">v1.0</span>
+          </div>
+          <p class="text-xs text-slate-400 hidden sm:block">Modular LLM Agent with Model Context Protocol Tools</p>
+        </div>
+      </div>
+
+      <!-- Header Controls & Status -->
+      <div class="flex items-center gap-3">
+        <!-- Live Status Indicators -->
+        <div class="flex items-center gap-2 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-full text-xs font-medium">
+          <span class="flex h-2 w-2 relative">
+            <span id="statusPing" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span id="statusDot" class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span id="statusText" class="text-slate-300">MCP Ready</span>
+        </div>
+
+        <!-- Available Tools Modal Toggle Button -->
+        <button id="btnToolsModal" class="p-2 text-slate-400 hover:text-white bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition flex items-center gap-1.5 text-xs font-medium" title="View MCP Tools">
+          <svg class="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span class="hidden sm:inline">MCP Tools</span>
+        </button>
+
+        <!-- Clear Chat Button -->
+        <button id="btnClearChat" class="p-2 text-slate-400 hover:text-rose-400 bg-slate-900/80 hover:bg-slate-800 border border-slate-800 rounded-xl transition" title="Clear Chat History">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Chat History Container -->
+    <main id="chatContainer" class="flex-1 overflow-y-auto py-6 px-2 sm:px-4 space-y-6 scroll-smooth custom-scrollbar">
+      
+      <!-- Welcome Hero / Initial State -->
+      <div id="welcomeHero" class="flex flex-col items-center justify-center text-center py-12 px-4 max-w-2xl mx-auto space-y-6">
+        <div class="relative">
+          <div class="h-20 w-20 rounded-3xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-cyan-400 p-0.5 shadow-xl shadow-indigo-500/20 animate-float">
+            <div class="h-full w-full bg-slate-950 rounded-[22px] flex items-center justify-center">
+              <svg class="w-10 h-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+            </div>
+          </div>
+          <span class="absolute -top-1 -right-1 flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-cyan-500 border-2 border-slate-950"></span>
+          </span>
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="text-2xl sm:text-3xl font-display font-bold text-white tracking-tight">
+            How can I assist you today?
+          </h2>
+          <p class="text-slate-400 text-sm max-w-md mx-auto">
+            Experience next-generation AI chat empowered by the <span class="text-indigo-400 font-semibold">Model Context Protocol</span>. Real-time tools, live database queries, and math calculations.
+          </p>
+        </div>
+
+        <!-- Suggestion Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full pt-4 text-left">
+          <button class="suggestion-chip group p-3.5 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl transition duration-200 shadow-sm" data-prompt="What is the exact current time and day of week?">
+            <div class="flex items-center gap-2.5 text-indigo-400 font-medium text-xs mb-1">
+              <span class="p-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20">🕒 Time Tool</span>
+            </div>
+            <p class="text-slate-300 text-sm group-hover:text-white transition">What is the exact current time and day of week?</p>
+          </button>
+
+          <button class="suggestion-chip group p-3.5 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl transition duration-200 shadow-sm" data-prompt="Calculate 125 * 38 + sqrt(1024) - 450">
+            <div class="flex items-center gap-2.5 text-violet-400 font-medium text-xs mb-1">
+              <span class="p-1 rounded-lg bg-violet-500/10 border border-violet-500/20">🔢 Math Tool</span>
+            </div>
+            <p class="text-slate-300 text-sm group-hover:text-white transition">Calculate 125 * 38 + sqrt(1024) - 450</p>
+          </button>
+
+          <button class="suggestion-chip group p-3.5 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl transition duration-200 shadow-sm" data-prompt="Query the database for products in stock">
+            <div class="flex items-center gap-2.5 text-cyan-400 font-medium text-xs mb-1">
+              <span class="p-1 rounded-lg bg-cyan-500/10 border border-cyan-500/20">🗄️ Database Tool</span>
+            </div>
+            <p class="text-slate-300 text-sm group-hover:text-white transition">Query the database for products in stock</p>
+          </button>
+
+          <button class="suggestion-chip group p-3.5 bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 hover:border-indigo-500/40 rounded-2xl transition duration-200 shadow-sm" data-prompt="Run system diagnostics and show host environment specs">
+            <div class="flex items-center gap-2.5 text-emerald-400 font-medium text-xs mb-1">
+              <span class="p-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20">⚡ System Tool</span>
+            </div>
+            <p class="text-slate-300 text-sm group-hover:text-white transition">Run system diagnostics and show host specs</p>
+          </button>
+        </div>
+      </div>
+
+      <!-- Messages Stream (Dynamically populated) -->
+      <div id="messagesList" class="space-y-6"></div>
+
+      <!-- Loading / Typing Indicator -->
+      <div id="loadingIndicator" class="hidden flex items-start gap-3">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/20 flex-shrink-0 mt-1">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+        </div>
+        <div class="bg-slate-900/90 border border-slate-800/80 rounded-2xl rounded-tl-sm px-4 py-3 shadow-lg">
+          <div class="flex items-center gap-2 text-xs text-slate-400 mb-1.5 font-medium">
+            <span>AI Agent</span>
+            <span class="text-indigo-400 font-mono text-[10px] bg-indigo-500/10 px-1.5 py-0.5 rounded">MCP Calling</span>
+          </div>
+          <div class="flex items-center space-x-2 py-1">
+            <div class="w-2 h-2 rounded-full bg-indigo-500 animate-bounce" style="animation-delay: 0ms"></div>
+            <div class="w-2 h-2 rounded-full bg-violet-400 animate-bounce" style="animation-delay: 150ms"></div>
+            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style="animation-delay: 300ms"></div>
+            <span class="text-xs text-slate-400 ml-2 font-mono" id="loadingStageText">Querying LLM & executing MCP tools...</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Sticky Bottom Input Area -->
+    <footer class="flex-none pb-4 pt-2 z-20">
+      <div class="relative bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-2xl p-2 sm:p-2.5 shadow-2xl shadow-black/40 focus-within:border-indigo-500/60 focus-within:ring-2 focus-within:ring-indigo-500/20 transition duration-200">
+        
+        <form id="chatForm" class="flex items-end gap-2">
+          <!-- Text Input Field -->
+          <textarea
+            id="messageInput"
+            rows="1"
+            placeholder="Ask a question or request a tool action (e.g. 'What time is it in Tokyo?')..."
+            class="flex-1 bg-transparent text-slate-100 placeholder-slate-500 resize-none px-3 py-2 text-sm sm:text-base focus:outline-none max-h-36 min-h-[42px] leading-relaxed custom-scrollbar"
+          ></textarea>
+
+          <!-- Action Buttons -->
+          <div class="flex items-center gap-1.5 pb-1 pr-1">
+            <button
+              type="submit"
+              id="btnSend"
+              disabled
+              class="h-10 w-10 sm:h-10 sm:w-10 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white flex items-center justify-center transition disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-indigo-600/30"
+              title="Send Message (Enter)"
+            >
+              <svg class="w-4 h-4 translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <!-- Footer Help Notes -->
+        <div class="flex items-center justify-between px-3 pt-2 text-[11px] text-slate-500 font-medium">
+          <div class="flex items-center gap-3">
+            <span class="flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-300 font-mono">Enter</kbd> to send
+            </span>
+            <span class="hidden sm:inline-flex items-center gap-1">
+              <kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-[10px] text-slate-300 font-mono">Shift + Enter</kbd> for newline
+            </span>
+          </div>
+          <div class="text-right">
+            <span class="text-slate-400">Model Context Protocol</span> Active
+          </div>
+        </div>
+
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MCP Tools Modal -->
+  <div id="toolsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h3 class="font-display font-bold text-lg text-white">Registered MCP Tools</h3>
+        </div>
+        <button id="btnCloseToolsModal" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <p class="text-xs text-slate-400">The LLM dynamically invokes these external tools over the Model Context Protocol stdio transport:</p>
+      
+      <div id="toolsListContainer" class="space-y-2.5 max-h-72 overflow-y-auto custom-scrollbar pr-1">
+        <!-- Tools will be rendered dynamically -->
+      </div>
+
+      <div class="pt-2 flex justify-end">
+        <button id="btnCloseToolsModalBottom" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic JavaScript -->
+  <script src="js/chat_logic.js"></script>
+</body>
+</html>
